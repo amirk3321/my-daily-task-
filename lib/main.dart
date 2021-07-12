@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:my_daily_task/features/presentation/screens/home_screen.dart';
+import 'package:my_daily_task/on_generate_route.dart';
 import 'injection_container.dart' as sl;
 
 
 void main() async{
-  await sl.init();
+  //await sl.init();
   runApp(MyApp());
 }
 
@@ -12,16 +14,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'My Daily Tasks',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Material App Bar'),
-        ),
-        body: Center(
-          child: Container(
-            child: Text('Hello World'),
-          ),
-        ),
+      theme: ThemeData(
+        primaryColor: Colors.indigoAccent
       ),
+      onGenerateRoute: OnGenerateRoute.route,
+      routes: {
+        "/":(context){
+          return HomeScreen();
+        }
+      },
     );
   }
 }
