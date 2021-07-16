@@ -190,7 +190,7 @@ class _AddNewTaskState extends State<AddNewTask> {
   _addTaskButtonWidget() {
     return Expanded(
       child: GestureDetector(
-        //FIXME:onTap: _addNewTask,
+        //FIXME:
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(

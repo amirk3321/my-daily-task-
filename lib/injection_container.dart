@@ -5,12 +5,8 @@ import 'package:my_daily_task/features/data/repositories/local_repsoitory_impl.d
 import 'package:my_daily_task/features/domain/repositories/local_repository.dart';
 import 'package:my_daily_task/features/domain/usecases/add_task_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/delete_usecase.dart';
-import 'package:my_daily_task/features/domain/usecases/delete_usecase.dart';
-import 'package:my_daily_task/features/domain/usecases/get_all_tasks.dart';
 import 'package:my_daily_task/features/domain/usecases/get_all_tasks.dart';
 import 'package:my_daily_task/features/domain/usecases/get_notification_usecase.dart';
-import 'package:my_daily_task/features/domain/usecases/get_notification_usecase.dart';
-import 'package:my_daily_task/features/domain/usecases/open_database_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/open_database_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/trun_off_notification_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/update_usecase.dart';
