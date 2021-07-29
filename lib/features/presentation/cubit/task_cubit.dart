@@ -5,6 +5,7 @@ import 'package:my_daily_task/features/domain/usecases/add_task_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/delete_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/get_all_tasks.dart';
 import 'package:my_daily_task/features/domain/usecases/get_notification_usecase.dart';
+import 'package:my_daily_task/features/domain/usecases/init_notification_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/open_database_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/trun_off_notification_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/update_usecase.dart';
@@ -19,6 +20,7 @@ class TaskCubit extends Cubit<TaskState> {
   final OpenDatabaseUseCase openDatabaseUseCase;
   final TurnOnNotificationUseCase turnOnNotificationUseCase;
   final UpdateUseCase updateUseCase;
+  final InitNotificationUseCase initNotificationUseCase;
 
   TaskCubit({
     this.addTaskUseCase,
@@ -27,9 +29,18 @@ class TaskCubit extends Cubit<TaskState> {
     this.getNotificationUseCase,
     this.openDatabaseUseCase,
     this.turnOnNotificationUseCase,
-    this.updateUseCase
+    this.updateUseCase,
+    this.initNotificationUseCase,
   }) : super(TaskInitialState());
 
+
+  Future<void> initNotification()async{
+    try{
+      await initNotificationUseCase.call();
+    }catch(_){
+      //FIXME:emit(failureState());
+    }
+  }
 
   Future<void> addNewTask({TaskEntity task})async{
     try{
@@ -46,6 +57,7 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
   Future<void> getAllTask()async{
+    emit(TaskLoadingState());
     try{
       final taskData=await getAllTaskUseCase.call();
       emit(TaskLoadedState(taskData: taskData));
@@ -53,7 +65,7 @@ class TaskCubit extends Cubit<TaskState> {
       emit(TaskFailureState());
     }
   }
-  Future<void> openDatabase({TaskEntity task})async{
+  Future<void> openDatabase()async{
     try{
       await openDatabaseUseCase.call();
     }catch(_){

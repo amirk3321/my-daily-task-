@@ -5,6 +5,7 @@ import 'package:sembast/sembast.dart';
 
 abstract class LocalRepository{
   Future<void> addNewTask(TaskEntity task);
+  Future<void> initNotification();
   Future<void> deleteTask(TaskEntity task);
   Future<void> updateTask(TaskEntity task);
   Future<List<TaskEntity>> getAllTasks();

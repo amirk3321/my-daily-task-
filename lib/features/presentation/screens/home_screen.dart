@@ -1,7 +1,9 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:my_daily_task/app_const.dart';
+import 'package:my_daily_task/features/presentation/cubit/task_cubit.dart';
 import 'package:my_daily_task/features/presentation/pages/add_new_task.dart';
 import 'package:my_daily_task/features/presentation/pages/complete_task_page.dart';
 import 'package:my_daily_task/features/presentation/pages/home_page.dart';
@@ -35,7 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.white,
         ),
         onPressed: (){
-          Navigator.pushNamed(context, PageConst.addNewTaskPage);
+          Navigator.pushNamed(context, PageConst.addNewTaskPage).then((value) {
+            BlocProvider.of<TaskCubit>(context).getAllTask();
+          });
         },
         //params
       ),

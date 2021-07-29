@@ -1,8 +1,11 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:my_daily_task/features/domain/enitites/task_entity.dart';
+import 'package:my_daily_task/features/presentation/cubit/task_cubit.dart';
 import 'package:my_daily_task/features/presentation/widgets/common.dart';
 import 'package:my_daily_task/features/presentation/widgets/theme/style.dart';
 
@@ -18,19 +21,66 @@ class _HomePageState extends State<HomePage> {
 
   SlidableController _slideController=SlidableController();
 
+  List<TaskEntity> _taskData=[];
+
+
+  @override
+  void initState() {
+    BlocProvider.of<TaskCubit>(context).getAllTask();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          _headerWidget(),
-          _listTaskWidget(),
-        ],
+      body: BlocBuilder<TaskCubit,TaskState>(
+        builder: (context,taskState){
+          if (taskState is TaskLoadedState){
+            return _bodyWidget(taskState.taskData);
+          }
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        },
       ),
     );
   }
 
-  _headerWidget() {
+  Widget _bodyWidget(List<TaskEntity> taskData){
+    return Column(
+      children: [
+        _headerWidget(taskData),
+        taskData.isEmpty && _taskData.isEmpty?Container(
+          height: 250,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                    height: 70,
+                    child: Opacity(
+                        opacity: .5,
+                        child: Image.asset("assets/tasks.png"))),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                  "You do not have any task",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black.withOpacity(.4)),
+                ),
+              ],
+            ),
+          ),
+        ): _listTaskWidget(_taskData.isEmpty?taskData:_taskData),
+      ],
+    );
+  }
+
+
+  _headerWidget(List<TaskEntity> taskData) {
     return Container(
       height: 250,
       width: double.infinity,
@@ -65,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Text(
-                      "Today you have 0 task",
+                      "Today you have ${taskData.length} task",
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
@@ -82,7 +132,13 @@ class _HomePageState extends State<HomePage> {
                     );
                   }).toList(),
                   onSelected: (String value) {
-                    //FIXME:
+                   setState(() {
+                     if (value == "Other"){
+                       _taskData=taskData;
+                     }else{
+                       _taskData=taskData.where((element) => element.taskType==value).toList();
+                     }
+                   });
                   },
                   child: Icon(
                     Icons.filter_list_outlined,
@@ -92,13 +148,13 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          _currentTaskWidget(),
+          _currentTaskWidget(taskData),
         ],
       ),
     );
   }
 
-  _currentTaskWidget() {
+  _currentTaskWidget(List<TaskEntity> taskData) {
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: 20,
@@ -134,14 +190,14 @@ class _HomePageState extends State<HomePage> {
                 height: 15,
               ),
               Text(
-                "Title",
+                taskData.isEmpty?"Title":"${taskData.last.title}",
                 style: TextStyle(color: Colors.white),
               ),
               SizedBox(
                 height: 15,
               ),
               Text(
-                "${DateFormat("hh:mm a").format(DateTime.now())}",
+                taskData.isEmpty?"":"${DateFormat("hh:mm a").format(DateTime.parse(taskData.last.time))}",
                 style: TextStyle(color: Colors.white),
               ),
             ],
@@ -152,18 +208,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _listTaskWidget() {
+  _listTaskWidget(List<TaskEntity> taskData) {
     return Expanded(
       child: ListView.builder(
-        itemCount: 10,
+        itemCount: taskData.length,
           itemBuilder: (_, index) {
-            return _listItem();
+            return _listItem(taskData[index]);
           },
       ),
     );
   }
 
-  _listItem() {
+  _listItem(TaskEntity task) {
     return Slidable(
       controller: _slideController,
       actionPane: SlidableDrawerActionPane(),
@@ -173,7 +229,11 @@ class _HomePageState extends State<HomePage> {
       secondaryActions: [
         GestureDetector(
           onTap: () {
-            //FIXME:Delete Task
+            BlocProvider.of<TaskCubit>(context).deleteTask(task: task).then((value){
+              Future.delayed(Duration(seconds: 1),(){
+                BlocProvider.of<TaskCubit>(context).getAllTask();
+              });
+            });
           },
           child: FittedBox(
             child: Container(
@@ -216,9 +276,9 @@ class _HomePageState extends State<HomePage> {
               buttonsBorderRadius: BorderRadius.all(Radius.circular(2)),
               headerAnimationLoop: true,
               animType: AnimType.TOPSLIDE,
-              title: 'Title',
+              title: '${task.title}',
               desc:
-              'title\n${DateFormat("hh:mm a").format(DateTime.now())}',
+              '${task.title}\n${DateFormat("hh:mm a").format(DateTime.parse(task.time))}',
               showCloseIcon: false,
               dialogType: DialogType.INFO,
               btnOkOnPress: () {},
@@ -236,7 +296,7 @@ class _HomePageState extends State<HomePage> {
                       width: 4,
                       decoration: BoxDecoration(
                           color:
-                          taskTypeListColor[0],
+                          taskTypeListColor[task.colorIndex],
                           borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(8),
                               bottomLeft: Radius.circular(8))),
@@ -246,13 +306,17 @@ class _HomePageState extends State<HomePage> {
                     ),
                     InkWell(
                       onTap: () {
-                        //FIXME:update task
+                        BlocProvider.of<TaskCubit>(context).updateTask(task: task).then((value) {
+                          Future.delayed(Duration(seconds: 1),(){
+                            BlocProvider.of<TaskCubit>(context).getAllTask();
+                          });
+                        });
                       },
                       child: Container(
                         height: 30,
                         width: 30,
                         decoration: BoxDecoration(
-                            color: true == false
+                            color: task.isCompleteTask == false
                                 ? Colors.white
                                 : Colors.green,
                             borderRadius: BorderRadius.all(
@@ -260,7 +324,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             border:
                             Border.all(color: Colors.grey[400])),
-                        child: true == false
+                        child: task.isCompleteTask == false
                             ? Icon(
                           Icons.done,
                           color: Colors.grey,
@@ -275,7 +339,7 @@ class _HomePageState extends State<HomePage> {
                       width: 10,
                     ),
                     Text(
-                      "${DateFormat("hh:mm a").format(DateTime.now())}",
+                      "${DateFormat("hh:mm a").format(DateTime.parse(task.time))}",
                       style: TextStyle(
                           color: Colors.black.withOpacity(.4)),
                     ),
@@ -285,13 +349,13 @@ class _HomePageState extends State<HomePage> {
                     Container(
                         width: MediaQuery.of(context).size.width / 2.1,
                         child: Text(
-                          "Title",
+                          "${task.title}",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                               color: Colors.black,
                               decoration:
-                              true == false
+                              task.isCompleteTask == false
                                   ? TextDecoration.none
                                   : TextDecoration.lineThrough),
                         )),
@@ -299,13 +363,19 @@ class _HomePageState extends State<HomePage> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    //FIXME:set notification
+                    BlocProvider.of<TaskCubit>(context).turnOnNotification(task: task).then((value){
+                      Future.delayed(Duration(seconds: 1),(){
+                        BlocProvider.of<TaskCubit>(context).getAllTask();
+                      });
+                    });
+                    BlocProvider.of<TaskCubit>(context).getNotification(task: task);
+
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(right: 12),
                     child: Icon(
                       FontAwesome.bell,
-                      color: true == false
+                      color: task.isNotification == false
                           ? Colors.grey
                           : Colors.deepOrange,
                       size: 18,

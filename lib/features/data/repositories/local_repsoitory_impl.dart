@@ -29,7 +29,7 @@ class LocalRepositoryImpl implements LocalRepository{
 
   @override
   Future<Database> openDatabase() async =>
-      openDatabase();
+      localDataSource.openDatabase();
 
   @override
   Future<void> turnOnNotification(TaskEntity task) =>
@@ -38,5 +38,9 @@ class LocalRepositoryImpl implements LocalRepository{
   @override
   Future<void> updateTask(TaskEntity task) async =>
       localDataSource.updateTask(task);
+
+  @override
+  Future<void> initNotification() async =>
+      localDataSource.initNotification();
 
 }

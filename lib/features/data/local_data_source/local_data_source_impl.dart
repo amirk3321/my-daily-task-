@@ -23,7 +23,6 @@ class LocalDataSourceImpl implements LocalDataSource {
     final appDocumentDir = await getApplicationDocumentsDirectory();
     final dbPath = join(appDocumentDir.path, "task.db");
     final database = await databaseFactoryIo.openDatabase(dbPath);
-
     _dbOpenCompleter.complete(database);
   }
 
@@ -33,7 +32,7 @@ class LocalDataSourceImpl implements LocalDataSource {
       title: task.title,
       isNotification: task.isNotification,
       colorIndex: task.colorIndex,
-      time: task.title,
+      time: task.time,
       isCompleteTask: task.isCompleteTask,
       taskType: task.taskType,
     ).toJson();
@@ -101,7 +100,7 @@ class LocalDataSourceImpl implements LocalDataSource {
       title: task.title,
       isNotification: task.isNotification == true ? false : true,
       colorIndex: task.colorIndex,
-      time: task.title,
+      time: task.time,
       isCompleteTask: task.isCompleteTask,
       taskType: task.taskType,
     ).toJson();
@@ -116,12 +115,22 @@ class LocalDataSourceImpl implements LocalDataSource {
       title: task.title,
       isNotification: task.isNotification,
       colorIndex: task.colorIndex,
-      time: task.title,
+      time: task.time,
       isCompleteTask: task.isCompleteTask == true ? false : true,
       taskType: task.taskType,
     ).toJson();
 
     final finder = Finder(filter: Filter.byKey(task.id));
     _taskStore.update(await _db, newTask, finder: finder);
+  }
+
+  @override
+  Future<void> initNotification()async {
+    var initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOs = IOSInitializationSettings();
+    var initSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
+    flutterLocalNotificationsPlugin.initialize(initSettings);
   }
 }

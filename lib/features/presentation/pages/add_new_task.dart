@@ -2,6 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:my_daily_task/features/domain/enitites/task_entity.dart';
+import 'package:my_daily_task/features/presentation/cubit/task_cubit.dart';
 import 'package:my_daily_task/features/presentation/widgets/common.dart';
 import 'package:intl/intl.dart';
 import 'package:my_daily_task/features/presentation/widgets/theme/style.dart';
@@ -190,7 +194,7 @@ class _AddNewTaskState extends State<AddNewTask> {
   _addTaskButtonWidget() {
     return Expanded(
       child: GestureDetector(
-        //FIXME:
+        onTap: submitNewTask,
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -213,5 +217,33 @@ class _AddNewTaskState extends State<AddNewTask> {
         ),
       ),
     );
+  }
+
+  void submitNewTask(){
+    if (_taskTextController.text.isEmpty){
+      return;
+    }
+    BlocProvider.of<TaskCubit>(context).addNewTask(
+      task: TaskEntity(
+        title: _taskTextController.text,
+        taskType: taskTypeList[_selectedTaskTypeIndex],
+        isNotification: false,
+        isCompleteTask: false,
+        colorIndex: _selectedTaskTypeIndex,
+        time: _selectedTime.toString(),
+      )
+    );
+    Future.delayed(Duration(seconds: 1),(){
+      Navigator.pop(context);
+      Fluttertoast.showToast(
+          msg: "New Task Added Successfully",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.blue,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+    });
   }
 }

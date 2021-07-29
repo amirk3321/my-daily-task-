@@ -7,12 +7,14 @@ import 'package:my_daily_task/features/domain/usecases/add_task_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/delete_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/get_all_tasks.dart';
 import 'package:my_daily_task/features/domain/usecases/get_notification_usecase.dart';
+import 'package:my_daily_task/features/domain/usecases/init_notification_usecase.dart';
+import 'package:my_daily_task/features/domain/usecases/init_notification_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/open_database_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/trun_off_notification_usecase.dart';
 import 'package:my_daily_task/features/domain/usecases/update_usecase.dart';
 import 'package:my_daily_task/features/presentation/cubit/task_cubit.dart';
 
-GetIt sl = GetIt.instance();
+GetIt sl = GetIt.instance;
 
 Future<void> init() async {
   //bloc/Cubit
@@ -24,9 +26,12 @@ Future<void> init() async {
     openDatabaseUseCase: sl.call(),
     turnOnNotificationUseCase: sl.call(),
     updateUseCase: sl.call(),
+    initNotificationUseCase: sl.call(),
   ));
 
   //UseCases
+  sl.registerLazySingleton<InitNotificationUseCase>(
+          () => InitNotificationUseCase(localRepository: sl.call()));
   sl.registerLazySingleton<AddTaskUseCase>(
       () => AddTaskUseCase(localRepository: sl.call()));
   sl.registerLazySingleton<DeleteTaskUseCase>(
